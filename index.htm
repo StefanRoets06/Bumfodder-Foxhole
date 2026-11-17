@@ -43,24 +43,11 @@
 </main>
 
 <script>
-/*
-  How it works
-  ------------
-  GitHub Pages is static, so a page can't list folders by itself. This page asks the
-  GitHub API for the repo's file tree, finds every  <war folder>/<name>.png , and
-  shows the newest PNG for each war.
-
-  "Newest" = highest day number in the filename (e.g. ...-day-494.png), falling back
-  to the last name alphabetically if no day number is present.
-
-  Owner/repo/branch are auto-detected from the Pages URL (owner.github.io/repo/).
-  If you use a custom domain or a user site, set them here:
-*/
 const CONFIG = {
-  owner:  null,   // e.g. "yourname"
-  repo:   null,   // e.g. "bumfodder"
-  branch: null,   // e.g. "main"  (null = repo default branch)
-  basePath: ""    // folder inside the repo that holds the war folders ("" = repo root)
+  owner:  "StefanRoets06",
+  repo:   "Bumfodder-Foxhole",
+  branch: null,
+  basePath: ""
 };
 
 const $status = document.getElementById('status');
@@ -73,7 +60,7 @@ function detectRepo(){
   if(!repo){
     const seg = location.pathname.split('/').filter(Boolean)[0];
     if(seg && !/\.html?$/i.test(seg)) repo = seg;
-    else if(owner) repo = owner + '.github.io';   // user/org site
+    else if(owner) repo = owner + '.github.io';
   }
   return {owner, repo};
 }
@@ -86,7 +73,7 @@ function warOf(folder){
   const m = folder.match(/(\d+)/);
   return m ? parseInt(m[1],10) : -1;
 }
-function cmpFiles(a,b){            // ascending
+function cmpFiles(a,b){
   return dayOf(a.name)-dayOf(b.name) || a.name.localeCompare(b.name,undefined,{numeric:true});
 }
 const enc = p => p.split('/').map(encodeURIComponent).join('/');
@@ -106,7 +93,6 @@ async function getTree(){
   return j.tree.filter(t=>t.type==='blob').map(t=>t.path);
 }
 
-// Optional offline/local fallback: a manifest.json listing paths, e.g. ["W142/a.png", ...]
 async function getManifest(){
   const r = await fetch('manifest.json',{cache:'no-store'});
   if(!r.ok) throw new Error('no manifest');
@@ -119,7 +105,7 @@ function group(paths){
   for(const p of paths){
     if(!p.startsWith(base) || !/\.png$/i.test(p)) continue;
     const rel = p.slice(base.length).split('/');
-    if(rel.length !== 2) continue;           // only <war>/<file>.png
+    if(rel.length !== 2) continue;
     (wars[rel[0]] ||= []).push({name:rel[1], path:p});
   }
   return Object.entries(wars)
@@ -138,7 +124,7 @@ function render(list){
     const older = w.files.slice(0,-1).reverse();
     sec.innerHTML = `
       <h2><span>War ${warOf(w.war)>=0?warOf(w.war):w.war}</span>
-          <span class="tag">${i===0?'Latest war · ':''}${w.files.length} image${w.files.length>1?'s':''}</span></h2>
+          <span class="tag">${i===0?'Latest war · ':''}${w.files.length} report${w.files.length>1?'s':''}</span></h2>
       <a class="shot" href="${enc(latest.path)}" target="_blank" rel="noopener">
         <img src="${enc(latest.path)}" alt="${latest.name}" ${i>0?'loading="lazy"':''}>
       </a>
